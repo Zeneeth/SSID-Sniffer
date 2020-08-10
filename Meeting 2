@@ -1,0 +1,33 @@
+10/08/2020 – 17:00 (Audio Call)
+
+Meeting – Tilly, Anna, Matt, Margaret, Katie, Russell
+
+Before: Anna and Tilly did some research and added to Git
+
+Content:
+
+-	Look through research everyone has done – Margaret shared another research link which has been added to 'Good Links' on Git
+-	Analyse code already present that achieves all or part of our project goal.
+-	Find the best way to go about our project
+-	Revisit plan and described it in more detail:
+  o	Build demo SSID sniffer
+  o	Map the locations of Aps
+    	Make it look aesthetically pleasing
+    	Matt came up with the idea to research Google APIs
+    	Margaret suggested that we also include a timeline as mentioned in the brief – timeline of SSID pings
+  o	Make it GDPR compliant
+    	Maybe get users to sign contracts/Terms and Conditions
+  o	Tell people how to keep it in safe mode
+-	Katie and Anna had to head off
+-	Matt tested the pycapy library on the raspberry pi
+-	Matt successfully managed to import and run it.
+-	Margaret, Tilly, Matt and Russell agreed using python and the Pycapy library was the best step forward.
+
+Tasks before next meeting:
+-	Tilly, Margaret, Matt and Russell to learn Pycapy library and how to extract relevant information from the output by Wednesday for a coding meeting
+-	Anna, Shurjo and Katie need to look into Google Maps APIs and how we can utilise them to graphically present our SSID findings. They must also look at how to create a timeline as another format of output – to show all the SSIDs by next Monday’s meetings
+-	If anyone has extra time – please add some GDPR research to Github
+
+Next Meeting:
+-	Wednesday – Tilly, Margaret, Russell and Matt
+-	Monday - All
