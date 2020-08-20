@@ -102,7 +102,7 @@ def main():
     print("Started sniffing for directed probe requests")
     running = True
     while(running):
-        choice = input("Please choose from the following (list, locations, exit): ")
+        choice = input("Please choose from the following (list, locations, trackMAC, trackSSID, exit): ")
         if choice == "list" or choice == "l":
             print("---------------")
             for j in macssid:
@@ -116,5 +116,10 @@ def main():
             for i in ssidlocations:
                 print(i, ssidlocations[i])
             print("---------------")
+        elif choice == "trackMAC":
+            print("NEEDS IMPLEMENTATION")
+        elif choice == "trackSSID":
+            print("NEEDS IMPLEMENTATION")
+
 if __name__ == "__main__":
     main()
