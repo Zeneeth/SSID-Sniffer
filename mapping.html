@@ -40,7 +40,7 @@ where;
     <div id="header">
         <span id="title">SSniffer</span>
         </br>
-        <span id="locations">Locations (<span>0</span>)</span>
+        <span id="locations">Locations (<span id="count">0</span>)</span>
         </br>
         <span id="attribution">A project by <img src="https://toppng.com/uploads/preview/transparent-library-mini-pinterest-sombreros-template-clipart-mexican-hat-11562873958fcvjl2nez2.png"/></span>
     </div>
@@ -72,7 +72,7 @@ where;
 
         if (components.length % 2 != 0)
             return null;
-
+        
         for (var i = 0; i <= components.length / 2; i += 2)
             coordinates.push([components[i], components[i + 1]].map(parseFloat));
 
@@ -82,9 +82,12 @@ where;
     function plotCoordinates (coordinates) {
 
         // Put the coordinates onto the map
-
-        for (var i = 0; i < coordinates.length; i++)
+        var i;
+        
+        for (i = 0; i < coordinates.length; i++)
             new L.Marker().setLatLng(coordinates[i]).addTo(map);
+        
+        document.getElementById("count").innerHTML = i;
     }
 
     window.onload = function () {
