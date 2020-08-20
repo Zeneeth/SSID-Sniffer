@@ -102,7 +102,7 @@ def main():
     print("Started sniffing for directed probe requests")
     running = True
     while(running):
-        choice = input("Please choose from the following (list, exit, locations): ")
+        choice = input("Please choose from the following (list, locations, exit): ")
         if choice == "list" or choice == "l":
             print("---------------")
             for j in macssid:
