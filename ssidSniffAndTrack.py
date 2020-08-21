@@ -1,16 +1,18 @@
 from scapy.all import *
+import base64
 import threading
 import json
 import requests
 import time
-
+import math
+import webbrowser
 
 wigleuser = #PUT WIGLE API NAME HERE
 wiglepass = #PUT WIGLE API TOKEN HERE
+
 currentLat = 51.509865
 currentLon = -0.118092
-macssid = {}
-ssidlocations = {}
+ssidlocmac = {}
 welcome = [
 "-----------------------------------------------------------------------------",
 "   _____ _____ _____ _____     _____ _   _ _____ ______ ______ ______ _____  ",
@@ -47,45 +49,53 @@ def calculateDistance(lat1, lon1, lat2, lon2):
 
 def findNetwork(ssid):
     try:
-        payload = payload = {'ssid': ssid}
+        payload = {'ssid': ssid, 'resultsPerPage': 1000}
         resp = requests.get(url='https://api.wigle.net/api/v2/network/search', params=payload, auth=(wigleuser, wiglepass)).json()
 
         if resp['success']:
             if resp['totalResults'] == 0:
-                return "none found"
+                return "NR"
             elif resp['totalResults'] > 1:
                 minDistance = calculateDistance(currentLat, currentLon, resp['results'][0]['trilat'], resp['results'][0]['trilong'])
                 minIndex = 0
-                for i in range(1, resp['totalResults']):
+                for i in range(1, resp['resultCount']):
                     if minDistance > calculateDistance(currentLat, currentLon, resp['results'][i]['trilat'], resp['results'][i]['trilong']):
                         minDistance = calculateDistance(currentLat, currentLon, resp['results'][i]['trilat'], resp['results'][i]['trilong'])
                         minIndex = i
-                return str(resp['results'][minIndex]['trilat'], resp['results'][minIndex]['trilong'])
+                return str(resp['results'][minIndex]['trilat']) + ", " + str(resp['results'][minIndex]['trilong'])
             else:
-                return str(resp['results'][0]['trilat'], resp['results'][0]['trilong'])
+                return str(resp['results'][0]['trilat']) + ", " + str(resp['results'][0]['trilong'])
+        elif resp['message'] == 'too many queries today':
+            return ">Q"
         else:
-            return "Response failed: " + resp['message']
+            print(resp['message'])
+            return "ER"
     except:
-        return "Error fetching data from wigle"
+        print("COMMAND ERROR")
+        return "ER"
 
 def packetCheck(pkt):
     if pkt.type == 0 and pkt.subtype == 4:
         ssid = str(pkt.info)[2:-1]
         sendermac = str(pkt.addr2)
-        if sendermac in macssid:
-            if ssid not in macssid[sendermac]:
-                 if ssid != '':
-                    macssid[sendermac].add(ssid)
-        else:
-            if ssid != '':
-                macssid[sendermac] = {ssid}
-        if ssid not in ssidlocations:
-            ssidlocations[ssid] = findNetwork(ssid) 
+        if ssid != '':
+            if ssid in ssidlocmac:
+                if sendermac not in ssidlocmac[ssid][1]:
+                    ssidlocmac[ssid][1].add(sendermac)
+            else:
+                ssidlocmac[ssid] = ["NT", {sendermac}]
+
+def findSSIDsFromMac(mac):
+    ssidsFound = []
+    for x in ssidlocmac:
+        if mac in ssidlocmac[x][1]:
+            ssidsFound.append(x)
+    return ssidsFound
 
 def directedProbeRequestSniffer():
     while(True):
         try:
-            sniff(iface="wlan0",prn=packetCheck)
+            sniff(iface="wlan0",prn=packetCheck,store=False)
         except:
             print("There was an error trying to start sniffing for packets, please check your network card setup")
             break
@@ -102,24 +112,75 @@ def main():
     print("Started sniffing for directed probe requests")
     running = True
     while(running):
-        choice = input("Please choose from the following (list, locations, trackMAC, trackSSID, exit): ")
-        if choice == "list" or choice == "l":
+        choice = input("Please choose from the following (listssid, listmac, tracemac, findssid, exit): ")
+        if choice == "listssid" or choice == "ls":
             print("---------------")
-            for j in macssid:
-                print(j, macssid[j])
+            for j in ssidlocmac:
+                print(j, ssidlocmac[j])
             print("---------------")
-        elif choice == "exit":
+        elif choice == "listmac" or choice == "lm":
+            print("---------------")
+            maclist = {}
+            for x in ssidlocmac:
+                for y in ssidlocmac[x][1]:
+                    if y in maclist:
+                        maclist[y].add(x + " (" + str(ssidlocmac[x][0]) + ")")
+                    else:
+                        maclist[y] = {x + " (" + str(ssidlocmac[x][0]) + ")"}
+            for x in maclist:
+                print(x + " " + str(maclist[x]))
+            print("---------------")
+        elif choice == "tracemac" or choice == "t":
+            mac = input("Please input the mac address: ")
+            print("---------------")
+            ssids = findSSIDsFromMac(mac)
+            if len(ssids) == 0:
+                print("No SSIDs found - please check you typed the mac correctly")
+            else:
+                locations = ''
+                print(mac + " has tried to conenct to the following ssids:")
+                for x in ssids:
+                    print(x)
+                    if ssidlocmac[x][0] == 'NT':
+                        ssidlocmac[x][0] = findNetwork(x)
+                    if ssidlocmac[x][0] == 'ER' or ssidlocmac[x][0] == 'NR' or ssidlocmac[x][0] == '>Q':
+                        print("No location for", x, "so will not be on map")
+                    else:
+                        locations = locations + ssidlocmac[x][0] + ","
+                locations = locations[0:-1]
+                if len(locations)>0:
+                    try:
+                        webbrowser.open("http://localhost?coordinates=" + str(base64.b64encode(locations.encode("utf-8")), "utf-8"), new=0)
+                    except:
+                        pass
+                else:
+                    print("No locations found for those ssids")
+            print("---------------")
+
+        elif choice == "findssid" or choice == "f":
+            ssid = input ("Please input the SSID of the network: ")
+            ssid = str(ssid)
+            location = ''
+            print("---------------")
+            if ssid not in ssidlocmac:
+                print("That network has not been sniffed, but will attempt to locate it anyway")
+                location = 'NT'
+            else:
+                location = ssidlocmac[ssid][0]
+            if location == 'NT':
+                location = findNetwork(ssid)
+                if ssid in ssidlocmac:
+                    ssidlocmac[ssid][0] = location
+            if location == 'ER' or location == 'NR' or location == '>Q':
+                print("No location found for", ssid)
+            else:
+                try:
+                    webbrowser.open("http://localhost?coordinates=" + str(base64.b64encode(location.encode("utf-8")), "utf-8"), new=0)
+                except:
+                    pass
+            print("---------------")
+        elif choice == "exit" or choice == "e":
             running = False
             print("Stopping the sniff")
-        elif choice == "locations":
-            print("---------------")
-            for i in ssidlocations:
-                print(i, ssidlocations[i])
-            print("---------------")
-        elif choice == "trackMAC":
-            print("NEEDS IMPLEMENTATION")
-        elif choice == "trackSSID":
-            print("NEEDS IMPLEMENTATION")
-
 if __name__ == "__main__":
     main()
