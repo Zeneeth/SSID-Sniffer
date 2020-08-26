@@ -7,9 +7,10 @@ import time
 import math
 import webbrowser
 
-wigleuser = #PUT WIGLE API NAME HERE
-wiglepass = #PUT WIGLE API TOKEN HERE
+wigleuser = "AIDb85c32179e1714364c2691339cac840c"
+wiglepass = "3f53b918afe795ff94efcc9c833dbd8b"
 
+browser = webbrowser.get()
 currentLat = 51.509865
 currentLon = -0.118092
 ssidlocmac = {}
@@ -113,7 +114,25 @@ def main():
     running = True
     while(running):
         choice = input("Please choose from the following (listssid, listmac, tracemac, findssid, exit): ")
-        if choice == "listssid" or choice == "ls":
+        if choice == "help" or choice == "h":
+            print("---------------")
+            print("COMMANDS")
+            print("help(h)     : displays this information")
+            print("listssid(ls): lists all the SSIDs that have devices have looked for, and the status of the network location")
+            print("listmac(lm) : lists all the mac addresses that have looked for networks, and the SSIDs of any networks they have looked for")
+            print("tracemac(t) : will ask for the mac address to trace (lower case), will then attempt to locate all networks that device has looked for and plot them on a map")
+            print("findssid(f) : will search for that SSID (even if it has not been sniffed) and plot the location on a map")
+            print("exit(e)     : ends the program")
+            print("~~~~~~")
+            print("LOCATION STATUS CODES")
+            print("Once the program has discovered an SSID, the list commands with either display the latitude and longitude of that network, or one of the following codes")
+            print("NT : Not yet attempted to locate network")
+            print("NF : Network location could not be found using wigle")
+            print("ER : Error retrieving location - normally caused by an invalid api key")
+            print(">Q : The api key has reached its daily query limit")
+            print("---------------")
+
+        elif choice == "listssid" or choice == "ls":
             print("---------------")
             for j in ssidlocmac:
                 print(j, ssidlocmac[j])
@@ -150,7 +169,7 @@ def main():
                 locations = locations[0:-1]
                 if len(locations)>0:
                     try:
-                        webbrowser.open("http://localhost?coordinates=" + str(base64.b64encode(locations.encode("utf-8")), "utf-8"), new=0)
+                        browser.open("http://localhost?coordinates=" + str(base64.b64encode(locations.encode("utf-8")), "utf-8"), new=0)
                     except:
                         pass
                 else:
@@ -175,7 +194,7 @@ def main():
                 print("No location found for", ssid)
             else:
                 try:
-                    webbrowser.open("http://localhost?coordinates=" + str(base64.b64encode(location.encode("utf-8")), "utf-8"), new=0)
+                    browser.open("http://localhost?coordinates=" + str(base64.b64encode(location.encode("utf-8")), "utf-8"), new=0)
                 except:
                     pass
             print("---------------")
