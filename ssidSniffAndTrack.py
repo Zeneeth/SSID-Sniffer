@@ -113,7 +113,7 @@ def main():
     print("Started sniffing for directed probe requests")
     running = True
     while(running):
-        choice = input("Please choose from the following (listssid, listmac, tracemac, findssid, exit): ")
+        choice = input("Please choose from the following (help, listssid, listmac, tracemac, findssid, exit): ")
         if choice == "help" or choice == "h":
             print("---------------")
             print("COMMANDS")
