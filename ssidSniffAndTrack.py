@@ -7,8 +7,8 @@ import time
 import math
 import webbrowser
 
-wigleuser = "AIDb85c32179e1714364c2691339cac840c"
-wiglepass = "3f53b918afe795ff94efcc9c833dbd8b"
+wigleuser = # wigle api name
+wiglepass = # wigle api token
 
 browser = webbrowser.get()
 currentLat = 51.509865
